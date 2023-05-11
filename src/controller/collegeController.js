@@ -3,14 +3,17 @@ let internModel = require("../models/internModel");
 const {isValidName, isValidNames} = require("../validators/validator");
 let axios = require("axios");
 
-//=================================================CREATING COLLEGES=============================================================================//
+
+
+//==================================  CREATING COLLEGES  =======================================================//
+
 
 let createCollege = async function (req, res) {
   try {
     const data = req.body;
     let { name, fullName, logoLink } = data;
 
-    //CHECKING IF ALL THE FIELDS PRESENT IN THE BODY------------------------------
+
     if (Object.keys(data).length == 0)
       return res
         .status(400)   
@@ -19,7 +22,7 @@ let createCollege = async function (req, res) {
           message: "cannot create data without any information",
         });
 
-    //KEY VALIDATION---------------------------------------------------------------
+
     let keyArr = Object.keys(data);
     for (let i = 0; i < keyArr.length; i++) {
       keyArr[i] = keyArr[i].trim();
@@ -48,7 +51,6 @@ let createCollege = async function (req, res) {
         .send({ status: false, message: "Logo link is required" });
     logoLink = logoLink.trim();
 
-    //VALIDATIONS USING REGEX---------------------------------------------------------
     let validName = isValidNames(name);
     if (!validName)
       return res
@@ -64,36 +66,39 @@ let createCollege = async function (req, res) {
         .status(400)
         .send({ status: false, message: "Full name can only contain letters" });
 
-    // let urlfound = false;
+    let urlfound = false;
 
-    // await axios
-    //   .get(logoLink)
-    //   .then((result) => {
-    //     if (result.status == 201 || result.status == 200) urlfound == true;
-    //   })
-    //   .catch((err) => {});
+    await axios
+      .get(logoLink)
+      .then((result) => {
+        if (result.status == 201 || result.status == 200) urlfound == true;
+      })
+      .catch((err) => {});
 
-    // if (urlfound == false)
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, ERROR: "Invalid Logo link" });
+    if (urlfound == false)
+      return res
+        .status(400)
+        .send({ status: false, ERROR: "Invalid Logo link" });
 
-    //IF COLLEGE ALREAY EXISTS-----------------------------------------------------------------------
+   
     let isfullName = await collegeModel.find({ fullName: fullName });
     if (isfullName.length !== 0)
       return res
         .status(400)
         .send({ status: false, message: "This college already exists" });
 
-    //CREATING COLLEGE IF COLLEGE DOES NOT EXISTS---------------------------------------------------------
     const newCollege = await collegeModel.create(data);
+
     res.status(201).send({ status: true, data: newCollege });
   } catch (err) {
     return res.status(500).send({ status: false, msg: err.message });
   }
 };
 
-//=============================================================GETTING COLLEGES=====================================================================
+
+//======================================GETTING COLLEGES=================================================//
+
+
 
 const getCollege= async(req, res)=> {
   try{
